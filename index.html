@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>首字母大小写转换</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        textarea {
+            width: 400px;
+            height: 200px;
+        }
+
+        button {
+            margin-top: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #inputPlat {
+            text-align: center;
+            /* 设置容器内元素居中对齐 */
+        }
+
+        #inputPlat input {
+            display: block;
+            margin: 0 auto;
+            /* 设置input元素居中对齐 */
+        }
+
+        #inputFields {
+            text-align: center;
+        }
+
+        #areaDiv {
+            display: block;
+            margin: 0 auto;
+        }
+
+        #switch {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .toggle {
+            width: 60px;
+            height: 30px;
+            border-radius: 15px;
+            background-color: #ccc;
+            position: relative;
+            cursor: pointer;
+        }
+
+        /* 滑块 */
+        .slider {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: white;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+
+        /* 切换开关状态的类 */
+        .on {
+            transform: translateX(30px);
+            background-color: green;
+            /* 新增选中状态的背景颜色 */
+        }
+
+        .subOn {
+            transform: translateX(30px);
+            background-color: green;
+            /* 新增选中状态的背景颜色 */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Oracle字段转换</h1>
+    <div id="inputFields">
+        <label>
+            <input type="radio" name="convertOption" value="uppercase" checked
+                onchange="toggleInputFields()" />平台生成JSON文档
+        </label>
+        <label>
+            <input type="radio" name="convertOption" value="platprop" onchange="toggleInputFields()" />平台生成属性类
+        </label>
+        <label>
+            <input type="radio" name="convertOption" value="lowercase" onchange="toggleInputFields()" />Java生成对象类
+        </label>
+        <div id="inputPlat">
+            <br />
+            <input type="text" id="tradeCodeInput" placeholder="输入TradeCode" style="display: block;" />
+            <br />
+            <input type="text" id="systemCodeInput" placeholder="输入SystemCode" style="display: block;" />
+            <br />
+        </div>
+        <div id="switch">
+            <div class="status-text">Body是否为List:</div>
+            <div class="toggle" onclick="toggleSwitch()">
+                <div class="slider" id="bodySwitch"></div>
+            </div>
+            <div class="status-text">是否存在子结构:</div>
+            <div class="toggle" onclick="toggleSwitch2()">
+                <div class="slider" id="subSwitch"></div>
+            </div>
+        </div>
+    </div>
+    <div id="areaDiv" display: none;>
+        <textarea id="textInput" placeholder="在这里输入内容，多个字段请用回车分隔"></textarea>
+        <textarea id="bank" placeholder="文字备注"></textarea>
+    </div>
+    <div id="areaSubDiv" style="display: none;">
+        <textarea id="textInput2" placeholder="在这里输入内容，多个字段请用回车分隔"></textarea>
+        <textarea id="bank2" placeholder="字节点文字备注，List标注子节点名称"></textarea>
+    </div>
+    <div id="areaDiv2" style="display: none;">
+        <textarea id="textInput3" placeholder="在这里输入文字样式，多个样式请用回车分隔"></textarea>
+    </div>
+    <br />
+    <button onclick="convertText()">转换</button>
+    <br />
+    <textarea id="outputText" placeholder="输出结果"></textarea>
+
+    <script>
+        function toggleInputFields() {
+            const convertOption = document.querySelector(
+                'input[name="convertOption"]:checked'
+            ).value
+            const tradeCodeInput = document.getElementById('tradeCodeInput')
+            const systemCodeInput = document.getElementById('systemCodeInput')
+            const areaDiv = document.getElementById('areaDiv')
+            const areaDiv2 = document.getElementById('areaDiv2')
+            const areaSubDiv = document.getElementById('areaSubDiv')
+            const Switch = document.getElementById('switch')
+
+            tradeCodeInput.style.display =
+                convertOption === 'uppercase' ? 'block' : 'none'
+            systemCodeInput.style.display =
+                convertOption === 'uppercase' ? 'block' : 'none'
+            areaDiv.style.display = convertOption === 'uppercase' ? 'block' : 'none'
+            Switch.style.display = convertOption === 'uppercase' ? 'block' : 'none'
+            areaSubDiv.style.display = convertOption === 'uppercase' ? 'block' : 'none'
+            areaDiv2.style.display = convertOption != 'uppercase' ? 'block' : 'none'
+            if (convertOption === 'uppercase') {
+                const currentURL = window.location.href;
+                window.location.href = currentURL;
+            }
+
+        }
+
+        function toggleSwitch() {
+            const slider = document.getElementById('bodySwitch')
+            slider.classList.toggle('on')
+        }
+        function toggleSwitch2() {
+            const slider = document.getElementById('subSwitch')
+            slider.classList.toggle('subOn')
+
+            const sliderSub = document.getElementById("subSwitch");
+            const isSubOn = slider.classList.contains("subOn");
+
+            // 组装数据,写一个生成的方法
+            const areaSubDiv = document.getElementById('areaSubDiv')
+            areaSubDiv.style.display = isSubOn ? 'block' : 'none'
+
+        }
+
+        function easyTrans(convertOption, outputText) {
+            const textLines = outputText.split('\n')
+            let returnStr = ''
+            if (convertOption === 'platprop') {
+                // 生成平台的转换
+                for (let i = 0; i < textLines.length; i++) {
+                    returnStr = returnStr + 'Property ' + textLines[i] + ' As %String;'
+                    returnStr += '\n'
+                }
+            } else if (convertOption === 'lowercase') {
+                for (let i = 0; i < textLines.length; i++) {
+                    returnStr = returnStr + 'private String ' + textLines[i] + ';'
+                    returnStr += '\n'
+                }
+            }
+            return returnStr
+        }
+
+        function hardTrans(tradeCode, systemCode, outputText, bank) {
+            const textLines = outputText.split('\n')
+            const banks = bank.split('\n')
+            if (textLines.length != banks.length) {
+                window.alert('检查字段是否一致')
+                return null
+            }
+            let returnStr = ''
+            // 判断是否是List的数据
+            const slider = document.getElementById("bodySwitch");
+            const isOn = slider.classList.contains("on");
+
+            //判断是否有SubList的数据
+            const sliderSub = document.getElementById("subSwitch");
+            const isSubOn = sliderSub.classList.contains("subOn");
+
+            // 定义子节点
+            let subItem = ''
+            let headStr = ''
+            let bodyStr = ''
+
+            // 组装数据,写一个生成的方法
+            const bank2Area = document.getElementById('bank2')
+            const bank2 = bank2Area.value.trim().split('\n')
+            const textInput2Area = document.getElementById('textInput2')
+            const textInput2 = textInput2Area.value.trim().split('\n')
+            if (isSubOn) {
+                if (textInput2.length != bank2.length) {
+                    window.alert('检查子节点字段是否一致')
+                    return null
+                }
+                else if(bank2[0]!='List'){
+                    window.alert('检查子节点标志节点是否为List')
+                    return null
+                }
+                // 按照List进行分割Bank数组
+                let tempArr = []
+                let tempBank = []
+                let flagMore = 0
+                for(let k=1;k<bank2.length;k++){
+                    if(bank2[k]!='List'){
+                        tempArr.push(textInput2[k])
+                        tempBank.push(bank2[k])
+                    }else{
+                        let tempWord = ''
+                        for (let i = 0; i < tempArr.length; i++) {
+                            let words = tempArr[i].split('_')
+                            tempWord = ''
+                            for (let j = 0; j < words.length; j++) {
+                                tempWord += words[j].charAt(0).toUpperCase() + words[j].slice(1).toLowerCase()
+                            }
+                            tempArr[i] = tempWord
+                        }
+                        subItem = subItem + '"'+textInput2[flagMore]+'":'+'[{' +
+                            productData(tempArr, tempBank) + '}],'
+
+                            flagMore=k //List标识位置
+                            tempArr=[]
+                            tempBank=[]
+                    }
+                }
+
+                    let tempWord = ''
+                        for (let i = 0; i < tempArr.length; i++) {
+                            let words = tempArr[i].split('_')
+                            tempWord = ''
+                            for (let j = 0; j < words.length; j++) {
+                                tempWord += words[j].charAt(0).toUpperCase() + words[j].slice(1).toLowerCase()
+                            }
+                            tempArr[i] = tempWord
+                        }
+                        subItem = subItem + '"'+textInput2[flagMore]+'":'+'[{' +
+                            productData(tempArr, tempBank) + '}]'
+                
+            }
+
+            if (isOn) {
+                if (isSubOn && subItem != '') {
+                    bodyStr += '[{' + productData(textLines, banks) + ',' + subItem + '}]'
+                } else {
+                    bodyStr += '[{' + productData(textLines, banks) + '}]'
+                }
+            } else {
+                if (isSubOn && subItem != '') {
+                    bodyStr += '{' + productData(textLines, banks) + ',' + subItem + '}'
+                } else {
+                    bodyStr += '{' + productData(textLines, banks) + '}'
+                }
+            }
+            // 处理头部信息
+            headStr = '{"TradeCode": "' + tradeCode + '","TradeTime": "2018-12-11 10:09:03","TradeNo": "47fc76b0-bda3-4a37-8905-acb30cc1878f","TradeStatus": "AA","TradeMessage": "处理成功","BranchCode": "01","SystemCode": "' + systemCode + '","HipSessionId": "0579"}'
+
+            // 组装最终的数据
+            returnStr = '{"Head":' + headStr + ',"Body":' + bodyStr + '}'
+
+            // 转json
+            return convertToJSON(returnStr)
+        }
+
+        // 组装数据
+        function productData(textLines, banks) {
+            let returnStr = ''
+            for (let i = 0; i < textLines.length; i++) {
+                returnStr = returnStr + '"' + textLines[i] + '"' + ':"' + banks[i] + '"'
+                if (i != textLines.length - 1) {
+                    returnStr += ','
+                }
+            }
+            return returnStr
+        }
+
+
+        function convertToJSON(jsonStr) {
+            try {
+                const jsonObject = JSON.parse(jsonStr)
+                const formattedJSON = JSON.stringify(jsonObject, null, 2)
+                return formattedJSON
+            } catch (error) {
+                window.alert('输入的内容不是有效的JSON格式。')
+                return null
+            }
+        }
+
+        function convertText() {
+            const textArea = document.getElementById('textInput')
+            const textArea3 = document.getElementById('textInput3')
+            const outputElement = document.getElementById('outputText')
+            const convertOption = document.querySelector(
+                'input[name="convertOption"]:checked'
+            ).value
+            const tradeCodeInput = document
+                .getElementById('tradeCodeInput')
+                .value.trim()
+            const systemCodeInput = document
+                .getElementById('systemCodeInput')
+                .value.trim()
+            let textLines = textArea.value.trim().split('\n')
+            const bankArea = document.getElementById('bank')
+            const bank = bankArea.value.trim()
+
+            let outputText = ''
+            if(convertOption==='lowercase'||convertOption==='platprop'){
+                let textLines3 = textArea3.value.trim().split('\n')
+                textLines=textLines3
+            }
+            for (let i = 0; i < textLines.length; i++) {
+                const words = textLines[i].split('_')
+                let convertedWords = []
+                for (let j = 0; j < words.length; j++) {
+                    if (convertOption === 'lowercase') {
+                        // convertedWords.push(words[j].charAt(0).toLowerCase() + words[j].slice(1));
+                        if (j === 0) {
+                            convertedWords.push(words[j].toLowerCase())
+                        } else {
+                            convertedWords.push(
+                                words[j].charAt(0).toUpperCase() +
+                                words[j].slice(1).toLowerCase()
+                            )
+                        }
+                    } else {
+                        convertedWords.push(
+                            words[j].charAt(0).toUpperCase() +
+                            words[j].slice(1).toLowerCase()
+                        )
+                    }
+                }
+                if (i != textLines.length - 1) {
+                    outputText += convertedWords.join('') + '\n'
+                } else {
+                    outputText += convertedWords.join('')
+                }
+            }
+            // 将数据进行内部转换
+            if (convertOption === 'uppercase') {
+                if (tradeCodeInput === '' || systemCodeInput === '') {
+                    window.alert('TradeCode或SystemCode不能为空')
+                } else {
+                    outputElement.value = hardTrans(
+                        tradeCodeInput,
+                        systemCodeInput,
+                        outputText,
+                        bank
+                    )
+                }
+            } else {
+                outputElement.value = easyTrans(convertOption, outputText)
+            }
+        }
+    </script>
+</body>
+
+</html>
